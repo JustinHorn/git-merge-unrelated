@@ -1,8 +1,13 @@
 #!/usr/bin/env node
+const path = require("path");
 
 const yargs = require("yargs");
 const util = require("util");
-const exec = util.promisify(require("child_process").exec);
+const _exec = util.promisify(require("child_process").exec);
+const exec = async (...args) => {
+  console.log("git-merge-rebase: " + args[0]);
+  return await _exec(...args);
+};
 var mv = util.promisify(require("mv"));
 
 const options = yargs
@@ -21,28 +26,28 @@ const options = yargs
     type: "string",
     demandOption: true,
   })
+
   .help(true).argv;
 
 const folderName = options.folderName;
 
 const ssh = options.ssh;
 
-console.log(folderName);
-console.log(ssh);
-
-const containsFolder = /\//;
-const getFirstFolder = /^(.+\/)/;
+const containsFolder = RegExp(path.sep);
+const getFirstFolder = RegExp(`^([^${path.sep}]+${path.sep})`);
 
 async function main() {
   await exec(
-    `git remote add ${folderName} ${ssh} && git fetch ${folderName} --tags && git merge --allow-unrelated-histories --no-commit ${folderName}/master`
+    'git init && git commit --allow-empty -m "git-merge-unrelated-commit"'
+  );
+  await exec(`git remote add ${folderName} ${ssh}`);
+  await exec(`git fetch ${folderName} --tags `);
+
+  await exec(
+    `git merge --allow-unrelated-histories --no-commit ${folderName}/master`
   );
 
   const { stdout, stderr } = await exec("git diff --name-only --cached");
-
-  console.log("hey!");
-  console.log(stdout);
-  console.log(stderr);
 
   const files = new Set();
   const folders = new Set();
@@ -58,16 +63,14 @@ async function main() {
       files.add(i);
     }
   });
-  console.log(files);
-  console.log(folders);
 
   files.forEach(async (f) => {
-    await mv(f, folderName + "/" + f, { mkdirp: true }, function (err) {
+    await mv(f, path.join(folderName, f), { mkdirp: true }, function (err) {
       console.error(err);
     });
   });
   folders.forEach(async (f) => {
-    await mv(f, folderName + "/" + f, { mkdirp: true }, function (err) {
+    await mv(f, path.join(folderName, f), { mkdirp: true }, function (err) {
       console.error(err);
     });
   });
@@ -75,7 +78,7 @@ async function main() {
   await exec(
     `git add . && git commit -a -m "Merge remote-tracking branch '${folderName}/master'"`
   );
+
+  await exec(`git remote remove ${folderName}`);
 }
 main();
-
-// console.log("hi");
