@@ -1,11 +1,16 @@
 {
-  "name": "gmu",
-  "version": "1.0.0",
-  "description": "Git-Merge-Unrelated - Merge an unrelated git repo into a subfolder of your repo!",
+  "name": "git-merge-unrelated",
+  "version": "1.0.1",
+  "description": "Git-Merge-Unrelated - Merge an unrelated git repo into a subfolders",
   "main": "./bin/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JustinHorn/git-merge-unrelated.git"
+},
   "bin": {
     "gmu": "./bin/index.js"
   },
+
   "scripts": {
     "test": "test"
   },
