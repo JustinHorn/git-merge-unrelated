@@ -5,7 +5,7 @@ const yargs = require("yargs");
 const util = require("util");
 const _exec = util.promisify(require("child_process").exec);
 const exec = async (...args) => {
-  console.log("git-merge-rebase: " + args[0]);
+  console.log("git-merge-unrelated: " + args[0]);
   return await _exec(...args);
 };
 var mv = util.promisify(require("mv"));
